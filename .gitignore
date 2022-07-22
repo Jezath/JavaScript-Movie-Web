@@ -105,3 +105,6 @@ dist
 
 # Secret.js (API_KEY)
 src/secrect.js
+
+# PNG icono de pestaña
+movie.png
