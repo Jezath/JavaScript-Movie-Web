@@ -103,8 +103,8 @@ dist
 # TernJS port file
 .tern-port
 
-# Secret.js (API_KEY)
-src/secrect.js
+# # Secret.js (API_KEY)
+# src/secrect.js
 
-# icon png pestaña
-icon.png
+# # icon png pestaña
+# icon.png

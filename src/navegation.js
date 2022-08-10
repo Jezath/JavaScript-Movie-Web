@@ -1,4 +1,8 @@
-searchFormBtn.addEventListener('click', () => { 
+let maxPage;
+let page = 1;
+let infiniteScroll;
+
+searchFormBtn.addEventListener('click', () => {
   location.hash = '#search=' + searchFormInput.value;
 });
 
@@ -8,17 +12,20 @@ trendingBtn.addEventListener('click', () => {
 
 arrowBtn.addEventListener('click', () => {
   history.back();
-  //location.hash = '#home';
+  // location.hash = '#home';
 });
 
-//función para navegar
-//agregamos dos eventos que estarán escuchando donde estamos navegando en nuestra página
 window.addEventListener('DOMContentLoaded', navigator, false);
 window.addEventListener('hashchange', navigator, false);
+window.addEventListener('scroll', infiniteScroll, false);
 
-//Con esta función validados la ubicación donde estemos
 function navigator() {
   console.log({ location });
+
+  if (infiniteScroll) {
+    window.removeEventListener('scroll', infiniteScroll, { passive: false });
+    infiniteScroll = undefined;
+  }
   
   if (location.hash.startsWith('#trends')) {
     trendsPage();
@@ -32,14 +39,14 @@ function navigator() {
     homePage();
   }
 
-  //scroll top: permite que al ingresar a una sección de la página esta se posesiones automáticamente en la parte superior, opciones:
+  document.body.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
 
-  //window.scrollTo(0, 0);
-  // document.body.scrollTop =0;
-  // document.documentElement.scrollTop = 0;
+  if (infiniteScroll) {
+    window.addEventListener('scroll', infiniteScroll, { passive: false });
+  }
 }
 
-//sección de las funciones para imprimir el console.log de la ubicación donde estamos
 function homePage() {
   console.log('Home!!');
 
@@ -53,11 +60,13 @@ function homePage() {
 
   trendingPreviewSection.classList.remove('inactive');
   categoriesPreviewSection.classList.remove('inactive');
+  likedMoviesSection.classList.remove('inactive');
   genericSection.classList.add('inactive');
   movieDetailSection.classList.add('inactive');
   
   getTrendingMoviesPreview();
   getCategegoriesPreview();
+  getLikedMovies();
 }
 
 function categoriesPage() {
@@ -73,15 +82,19 @@ function categoriesPage() {
 
   trendingPreviewSection.classList.add('inactive');
   categoriesPreviewSection.classList.add('inactive');
+  likedMoviesSection.classList.add('inactive');
   genericSection.classList.remove('inactive');
   movieDetailSection.classList.add('inactive');
 
-  const [_, categoryData] = location.hash.split('=') //['#category','id-name']
+  // ['#category', 'id-name']
+  const [_, categoryData] = location.hash.split('=');
   const [categoryId, categoryName] = categoryData.split('-');
 
   headerCategoryTitle.innerHTML = categoryName;
-
+  
   getMoviesByCategory(categoryId);
+
+  infiniteScroll = getPaginatedMoviesByCategory(categoryId);
 }
 
 function movieDetailsPage() {
@@ -97,9 +110,11 @@ function movieDetailsPage() {
 
   trendingPreviewSection.classList.add('inactive');
   categoriesPreviewSection.classList.add('inactive');
+  likedMoviesSection.classList.add('inactive');
   genericSection.classList.add('inactive');
   movieDetailSection.classList.remove('inactive');
 
+  // ['#movie', '234567']
   const [_, movieId] = location.hash.split('=');
   getMovieById(movieId);
 }
@@ -117,11 +132,15 @@ function searchPage() {
 
   trendingPreviewSection.classList.add('inactive');
   categoriesPreviewSection.classList.add('inactive');
+  likedMoviesSection.classList.add('inactive');
   genericSection.classList.remove('inactive');
   movieDetailSection.classList.add('inactive');
 
+  // ['#search', 'platzi']
   const [_, query] = location.hash.split('=');
   getMoviesBySearch(query);
+
+  infiniteScroll = getPaginatedMoviesBySearch(query);
 }
 
 function trendsPage() {
@@ -137,11 +156,13 @@ function trendsPage() {
 
   trendingPreviewSection.classList.add('inactive');
   categoriesPreviewSection.classList.add('inactive');
+  likedMoviesSection.classList.add('inactive');
   genericSection.classList.remove('inactive');
   movieDetailSection.classList.add('inactive');
 
   headerCategoryTitle.innerHTML = 'Tendencias';
 
   getTrendingMovies();
-}
 
+  infiniteScroll = getPaginatedTrendingMovies;
+}
